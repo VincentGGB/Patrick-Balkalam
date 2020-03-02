@@ -15,14 +15,15 @@
 /*Bon courage !*/
 
 int charToInt(char *numCharDiag);
-void translate(T_Position * P, char * fen);
+T_Position translate(T_Position * P, char * fen);
+void ecriture(T_Position pos, char * ficName,char * diagDesc,int numDiag);
 
 int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ceci. Impossible de faire autrement
 {
 	T_Position P;
 	char nom[30];  // On stocke ici le nom du fichier Json à creer
 	char desc[256];  // On stocke ici la description du diagramme
-	int numDiag; // On récupère la valeur int du numéro de diagramme
+	int Diag; // On récupère la valeur int du numéro de diagramme
 	printf("Veuillez entrez le nom du fichier à créer : ");  // On demande à l'utilisateur de saisir le nom du fichier comme demandé
 	fgets(nom,sizeof(nom),stdin);  // On utilise la fonction fgets car il ne doit y avoir aucun warning
 	printf("\nVeuillez rentrez la description du diagramme : ");  // On demande à l'utilisateur la description du diagramme comme demandé
@@ -39,9 +40,9 @@ int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ce
 	/*On peut transformer notre argv[1] soit le numéro de diag en int        */
 	/*Attention, cette méthode fontionne uniquement pour les chiffre ([0-9])*/
 
-	numDiag = *argv[1] - 48; // 48 étant le code ascii de 0
+	Diag = *argv[1] - 48; // 48 étant le code ascii de 0
 	//  Ou  = argv[1] - '0'; // Qui fonctionne aussi
-	printf("Numéro de diag (int) : %d\n\n",numDiag);
+	printf("Numéro de diag (int) : %d <<< Je fonctionne mal !\n\n",Diag);
 	
 	if(argc == 3) // On vérifira avant de se lancer dans l'interpretation de la commande entrée par l'utilisateur qu'il y a bien trois argument (./diag.static (1) <numDiag> (2) <codeFen> (3))
 	{
@@ -52,15 +53,16 @@ int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ce
 		else
 			printf("Erreur : Numéro de diag invalide\n");  // On retourne une erreur si le chiffre rentré est improbable
 
-		translate(&P,argv[2]);  // Appel de la fonction translate
+		P = translate(&P,argv[2]);  // Appel de la fonction translate
 	}
 
+	ecriture(P,nom,desc,Diag);
 
 return 0;
 }
 
 
-void translate(T_Position * P, char * fen)  // Voici un début de fontion translate, elle est à terminer, il manque encore plein de truc à vérifier
+T_Position translate(T_Position * P, char * fen)  // Voici un début de fontion translate, elle est à terminer, il manque encore plein de truc à vérifier
 {
 	int i;  // On défini i ici pour le recupérer en sortie de boucle
 	
@@ -127,6 +129,7 @@ void translate(T_Position * P, char * fen)  // Voici un début de fontion transl
 //TODO : Il faut gérer le fait qu'il peut y avoir des chiffre dans le code fen pour désigne le nombre de case vide
 // TODO : Il afut gérer le fait que le code fen n'est pas toujours remplit jusqu'à l'indice 48, il faut donc à la fin du code fen définir le reste des cases comme des cases VIDE
 // TODO : Si vous pensez à autre chose rajoutez le !
+return *P;
 }
 
 /*Cette fonction permet de lire un chiffre dans une chaine de caractère et de le retourner en int*/
@@ -151,6 +154,39 @@ int charToInt(char *numCharDiag)  // Cette fonction fonctione pour un nombre all
 return numDiag;
 }
 
+void ecriture(T_Position pos, char * ficName,char * diagDesc,int numDiag)  // Même fonctionnement que pour le standalone
+{
+	FILE* fichier=NULL; //pointer de fichier
+
+	char chemin[50]="../web/data/"; //il s'agit du chemin du fichier dans lequel vont être stockés les données de la partie
+	int i;
+
+
+
+	strcat(chemin, ficName); // concatère chemin et cat
+
+	fichier=fopen(chemin,"w+");  // Ouvre le fichier en mode écriture
+
+	if(fichier!=NULL)
+	{
+		// On commence ici à créer le fichier Json
+		fprintf(fichier, "traiterJson({\n");
+		fprintf(fichier, "\"trait\":%d,\n", pos.trait);
+		fprintf(fichier, "\"numDiag\":%d,\n", numDiag);
+		fprintf(fichier, "\"notes\":\"%s\",\n", diagDesc);
+		fprintf(fichier, "\"cols\":[\n");
+
+		for(i=0; i<=47; i++)
+		{
+			fprintf(fichier, "{\"nb\":%d, \"couleur\":%d},\n", pos.cols[i].nb,pos.cols[i].couleur);
+		}
+
+		fprintf(fichier, "]\n");
+		fprintf(fichier, "});");
+
+		fclose(fichier); // Referme le fichier
+	}
+	else printf("Le fichier n'existe pas\n");
+}
+
 // TODO : Fonction qui traduit le code Fen en chiffre et couleur a rentré dans le Json
-// TODO : Fonction qui écrit le fichier Json grace à la traduction du code fen
-// TODO : Fonction qui récupère le numDiag en int pour numDiag > 9
