@@ -36,7 +36,7 @@ int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ce
 	printf("Nom Fichier : %s\n",nom);  // Les fgets fonctionnent correctement
 	printf("Description : %s\n",desc);  // Les fgets fontionnent correctement 
 
-	/*On peu transformer notre argv[1] soit le numéro de diag en int        */
+	/*On peut transformer notre argv[1] soit le numéro de diag en int        */
 	/*Attention, cette méthode fontionne uniquement pour les chiffre ([0-9])*/
 
 	numDiag = *argv[1] - 48; // 48 étant le code ascii de 0
@@ -107,7 +107,7 @@ void translate(T_Position * P, char * fen)  // Voici un début de fontion transl
 		}	
 	}
 
-	if(fen[i]==' '  && fen[i+2]=='\0')  // Une fois sorti de la boucle il faut récupérer le trait en vérifiant que l'utilisateur n'a pas rentré de la merde
+	if(fen[i]==' '  && fen[i+2]=='\0')  // Une fois sorti de la boucle il faut récupérer le trait en vérifiant que l'utilisateur n'a pas rentré une valeure interdite
 	{
 		switch(fen[i+1])
 		{
