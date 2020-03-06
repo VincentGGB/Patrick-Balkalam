@@ -22,6 +22,7 @@ int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ce
 {
 	printf0("TTTTEESSSSSSTTTT!!!!!!!");
 	T_Position P;
+
 	int i=0;
 	char nom[30];  // On stocke ici le nom du fichier Json à creer
 	char desc[256];  // On stocke ici la description du diagramme
@@ -32,24 +33,15 @@ int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ce
 	printf("\nVeuillez rentrez la description du diagramme : ");  // On demande à l'utilisateur la description du diagramme comme demandé
 															   // Elle sera affiché dans le bas de la page web comme dans l'exemple, le site web la récupèrera du fichier Json
 															   // ELle est donc à écrire dans le fichier Json
-	while(fgets(desc[i],sizeof(desc),stdin!=NULL))
-	{
-		desc[i][strlen(desc-1)]='\0';  // On utilise fgets car il ne faut aucun warning
-		i++;
-	}
+	fgets(desc,sizeof(desc),stdin);
+	
+	desc[strlen(desc)-1]='\0';  // On utilise fgets car il ne faut aucun warning
 
-	printf("\nNombre d'arg : %d = argc\n\n",argc);  // argc n'est pas le numdiag, mais le nombre d'arg
-	printf("Numéro de diag (char) : %s = argv[1]\n\n",argv[1]); // argv[1] est le numéro de diag en char
-	printf("Code Fen : %s = argv[2]\n\n",argv[2]);  // On constate que le code fen se trouve dans argv[2]
-	printf("Nom Fichier : >>%s<<\n",nom);  // Les fgets fonctionnent correctement
-	printf("Description : %s\n",desc);  // Les fgets fontionnent correctement 
-
-	/*On peut transformer notre argv[1] soit le numéro de diag en int        */
-	/*Attention, cette méthode fontionne uniquement pour les chiffre ([0-9])*/
-
-	Diag = *argv[1] - 48; // 48 étant le code ascii de 0
-	//  Ou  = argv[1] - '0'; // Qui fonctionne aussi
-	printf("Numéro de diag (int) : %d <<< Je fonctionne mal !\n\n",Diag);
+	printf1("\nNombre d'arg : %d = argc\n\n",argc);  // argc n'est pas le numdiag, mais le nombre d'arg
+	printf1("Numéro de diag (char) : %s = argv[1]\n\n",argv[1]); // argv[1] est le numéro de diag en char
+	printf1("Code Fen : %s = argv[2]\n\n",argv[2]);  // On constate que le code fen se trouve dans argv[2]
+	printf1("Nom Fichier : >>%s<<\n",nom);  // Les fgets fonctionnent correctement
+	printf1("Description : %s\n",desc);  // Les fgets fontionnent correctement 
 	
 	if(argc == 3) // On vérifira avant de se lancer dans l'interpretation de la commande entrée par l'utilisateur qu'il y a bien trois argument (./diag.static (1) <numDiag> (2) <codeFen> (3))
 	{
@@ -183,7 +175,7 @@ T_Position translate(T_Position * P, char * fen)  // Voici un début de fontion 
 			break;
 
 			default: printf("La chaine fen saisie n'est pas correcte");
-				 printf("La valeur %c n'est pas reconnue",fen[i]);
+				 	 printf("La valeur %c n'est pas reconnue",fen[i]);
 			break;
 		}	
 		j++;
@@ -195,8 +187,6 @@ T_Position translate(T_Position * P, char * fen)  // Voici un début de fontion 
 		P->cols[k].couleur =VIDE;
 	}
 
-//TODO : Il faut gérer le fait qu'il peut y avoir des chiffre dans le code fen pour désigne le nombre de case vide
-// TODO : Il afut gérer le fait que le code fen n'est pas toujours remplit jusqu'à l'indice 48, il faut donc à la fin du code fen définir le reste des cases comme des cases VIDE
 // TODO : Si vous pensez à autre chose rajoutez le !
 return *P;
 }
