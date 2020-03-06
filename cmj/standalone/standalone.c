@@ -11,6 +11,7 @@ int main ()
 	T_Score s; 
 	T_Position p; 
 	T_ListeCoups l;
+	T_ListeCoups h;
 	octet origine;
 	octet destination;
 	char fic[16];
@@ -18,21 +19,32 @@ int main ()
 	p = getPositionInitiale();
 	s=evaluerScore(p);
 	sauvegarder(p,fic,s);
+        afficherScore(s);
  	l = getCoupsLegaux(p);
- 	printf("l.nb = %d",l.nb);
+	char rep;
  	printf("\n");
 
  	while(l.nb!=0)
- 	{
+ 	{       if(p.trait == 1) { 
+		printf("Le trait est aux : JAUNES \n");
+				 }				//AFFICHAGE A CHAQUE TOUR DU TRAIT A JOUER 
+ 		else printf("Le trait est aux : ROUGES \n");
+		printf("Il y a %d Coups Legaux \n" , l.nb);
+ 		printf("Voulez-vous afficher les Coups Possibles [0/N]?");  
+		scanf("%c",&rep);
+		if (rep=='o' || rep=='O'){ afficherListeCoups(l);}
 		printf("Quel pion voulez vous jouer ? \n");
+		printf("O : ");
 		scanf("%hhu", &origine);
 		printf("Sur quelle position voulez vous jouer ce pion ? \n");
+		printf("D : ");
 		scanf("%hhu", &destination);
-		p = jouerCoup(p, origine, destination);//Appel en plus la fonction estValide
-		addCoup(&l,origine, destination);
-		l = getCoupsLegaux(p);
-		s=evaluerScore(p);  // Récupère le score actuel
-		afficherScore(s); // afiiche le score actuel
+		p = jouerCoup(p, origine, destination);//JOUER LE COUP (AVEC VERIFICATION (FONCTION estValide)
+		addCoup(&h,origine, destination); //HISTORIQUE DE COUPS 
+		l = getCoupsLegaux(p); 
+		s=evaluerScore(p);  // RECUPERE LE SCORE A CHAQUE TOUR
+		afficherScore(s); // AFFICHE LE SCORE A CHAQUE TOUR 
+		getchar();
 		printf("\n");
 		sauvegarder(p,fic,s);
 	}
@@ -63,20 +75,20 @@ void sauvegarder(T_Position pos, char* chaine,	T_Score scor)
 {
 	FILE* fichier=NULL; //pointer de fichier
 
-	char chemin[50]="../web/data/"; //il s'agit du chemin du fichier dans lequel vont être stockés les données de la partie
+	char chemin[50]="../web/data/"; //LE FICHIER DONT LES DONNEES DE LA PARTIES SOUS FORMATS JSON SERONT STOCKES
 	int i;
 
 
 
-	strcat(chemin, chaine); // concatère chemin et cat
+	strcat(chemin, chaine); // CONCATENE CHEMIN ET CHAINE POUR FORMER LE BON CHEMIN VERS LE FICHIER 
 
-	fichier=fopen(chemin,"w+");  // Ouvre le fichier en mode écriture
+	fichier=fopen(chemin,"w+");  // OUVRE LE FICHIER EN MODE ECRITURE
 
 	if(fichier!=NULL)
 	{
 		// On commence ici à créer/modifier le fichier refresh-data.js
 
-		fprintf(fichier, "traiterJson({\n");
+		fprintf(fichier, "traiterJson({\n"); //ECRITURE SOUS FORMAT JSON
 		fprintf(fichier, "\"trait\":%d,\n", pos.trait);
 		fprintf(fichier, "\"scoreJ\":%d,\n", scor.nbJ);
 		fprintf(fichier, "\"scoreJ5\":%d,\n", scor.nbJ5);
