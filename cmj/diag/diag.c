@@ -4,50 +4,40 @@
 #include <avalam.h>
 #include <topologie.h>
 
-
-/*IMPORTANT !!!!!!! EXPLICATION DE DIAG.C!!!!!!!!!!*/
-/*auteurMessage : Paul Monier*/
-/*Le but de ce fichier est de créer une situation particulière de jeu comme dans ./web/avalam-diag.html ouvert avec ../exemples/diag_another.js */
-/*Pour celà nous devons créer un fichier json à partir de la position type FEN rentrée par l'utilisateur (nous), voir type FEN dans le cours*/
-/*L'utilisateur rentrera dans l'invite de commande "./diag.static <numDiag> <codeFen>" afin de recupérer numDiag et codeFen avec argc et argv*/
-/*J'ai mis ci dessous un morceau de code qui vous aidera à comprendre les difficultés qu'on va rencontrer.*/
-/*Je vous conseille donc de bien lire les commentaires et de me poser des questions ensuite.*/
-/*Bon courage !*/
-
+//prototypes
 int charToInt(char *numCharDiag);
 T_Position translate(T_Position * P, char * fen);
 void ecriture(T_Position pos, char * ficName,char * diagDesc,int numDiag);
 
 int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ceci. Impossible de faire autrement
 {
-	T_Position P;
+	//Declaration des variables 
+	T_Position P; //position des pions
+	int i=0;
 	char nom[30];  // On stocke ici le nom du fichier Json à creer
 	char desc[256];  // On stocke ici la description du diagramme
 	int Diag; // On récupère la valeur int du numéro de diagramme
+
 	printf("Veuillez entrez le nom du fichier à créer : ");  // On demande à l'utilisateur de saisir le nom du fichier comme demandé
 	fgets(nom,sizeof(nom),stdin);  // On utilise la fonction fgets car il ne doit y avoir aucun warning
 	nom[strlen(nom)-1]='\0';
 	printf("\nVeuillez rentrez la description du diagramme : ");  // On demande à l'utilisateur la description du diagramme comme demandé
 															   // Elle sera affiché dans le bas de la page web comme dans l'exemple, le site web la récupèrera du fichier Json
-															   // ELle est donc à écrire dans le fichier Json
-	fgets(desc,sizeof(desc),stdin);  // On utilise fgets car il ne faut aucun warning
-	desc[strlen(desc)-1]='\0';
+															   // Elle est donc à écrire dans le fichier Json
+	fgets(desc,sizeof(desc),stdin);
+	 	
+	desc[strlen(desc)-1]='\0';  // On utilise fgets car il ne faut aucun warning
 
-	printf("\nNombre d'arg : %d = argc\n\n",argc);  // argc n'est pas le numdiag, mais le nombre d'arg
-	printf("Numéro de diag (char) : %s = argv[1]\n\n",argv[1]); // argv[1] est le numéro de diag en char
-	printf("Code Fen : %s = argv[2]\n\n",argv[2]);  // On constate que le code fen se trouve dans argv[2]
-	printf("Nom Fichier : >>%s<<\n",nom);  // Les fgets fonctionnent correctement
-	printf("Description : %s\n",desc);  // Les fgets fontionnent correctement 
-
-	/*On peut transformer notre argv[1] soit le numéro de diag en int        */
-	/*Attention, cette méthode fontionne uniquement pour les chiffre ([0-9])*/
-
-	Diag = *argv[1] - 48; // 48 étant le code ascii de 0
-	//  Ou  = argv[1] - '0'; // Qui fonctionne aussi
-	printf("Numéro de diag (int) : %d <<< Je fonctionne mal !\n\n",Diag);
+	printf1("\nNombre d'arg : %d = argc\n\n",argc);  // argc n'est pas le numdiag, mais le nombre d'arguments
+	printf1("Numéro de diag (char) : %s = argv[1]\n\n",argv[1]); // argv[1] est le numéro de diag en char
+	printf1("Code Fen : %s = argv[2]\n\n",argv[2]);  // On constate que le code fen se trouve dans argv[2]
+	printf1("Nom Fichier : >>%s<<\n",nom);  // Les fgets fonctionnent correctement
+	printf1("Description : %s\n",desc);  // Les fgets fontionnent correctement 
 	
+	printf0("verification du nombre d'arg");
 	if(argc == 3) // On vérifira avant de se lancer dans l'interpretation de la commande entrée par l'utilisateur qu'il y a bien trois argument (./diag.static (1) <numDiag> (2) <codeFen> (3))
 	{
+		printf0("arc=3");
 		Diag = atoi(argv[1]);  // Appel de la fonction charToInt (voir fonction pour comprendre)
 
 		if(Diag!=0)
@@ -55,53 +45,66 @@ int main (int argc, char * argv[])  // Le prototype du main est vide ou comme ce
 		else
 			printf("Erreur : Numéro de diag invalide\n");  // On retourne une erreur si le chiffre rentré est improbable
 
-		P = translate(&P,argv[2]);  // Appel de la fonction translate
+		printf0("translate fen")
+		P = translate(&P,argv[2]);  // Appel de la fonction translate pour pouvoir utiliser le code fen
 	}
 
+	printf0("ecriture");
 	ecriture(P,nom,desc,Diag);
 
+printf0("fin main");
 return 0;
 }
 
 
-T_Position translate(T_Position * P, char * fen)  // Voici un début de fontion translate, elle est à terminer, il manque encore plein de truc à vérifier
+T_Position translate(T_Position * P, char * fen) 
 {
+	//Declaration des variables
 	int i;  // On défini i ici pour le recupérer en sortie de boucle
 	int j = 0;
+	int place =0;
 	
-	for (i = 0; fen[i]!=' ' && fen[i]!='\0'; ++i)  // On boucle jusqu'à la fin du code fen soit juste avant le trait (Définit juste après l'espace)
+	printf0("debut de la fonction translate et de la boucle for\n");
+
+	for (i = 0; /*fen[i]!=' ' && */fen[i]!='\0'; ++i)  // On boucle jusqu'à la fin du code fen soit juste avant le trait (Définit juste après l'espace)
 	{
-
-
 		if(fen[i]>='0' && fen[i]<='9')  // Si c'est un int
         {
-            /*if(fen[i+2]<='0' && fen[i+2]>='9')  // Si le nombre sasie est correct (deux chiffres au plus)
-            {*/
                 int fenInt;
                 int k;
-                fenInt = atoi(&fen[i]);
+                fenInt = atoi(&fen[i]);  // atoi vérifie le caractère suivant aussi
 
-                if(fen[i+1]>='0' && fen[i+1]<='9')  // Si c'est un chiffre
+                if(fenInt <= 47)
                 {
-                	printf("coucou");
-                    fenInt = fenInt*10 + atoi(&fen[i+1]);
-                    i=i+2;
-                }
-                else
-                {
-                	i=i+1;
-                }
+	                if(fen[i+1]>='0' && fen[i+1]<='9')  // Si c'est un chiffre
+	                {
+	                	if(fen[i+2]!='\0')
+	                	{
+	                    	i=i+2;
+	                    }
+	                    else
+	                    {
+	                    	i=i+1;
+	                    	fen[i]='\0';
+	                    	place =1;
+	                    }
+	                }
+	                else
+	                {
+	                	i=i+1;
+	                }
 
-
-                for (k = j; k < fenInt+j; ++k)
-                {
-                    P->cols[k].nb = 0;
-                    P->cols[k].couleur = VIDE;
-                }
-                j=k;
-                /*P->cols[j].nb = 0;
-                P->cols[j].couleur = VIDE;*/
-           //}
+	                for (k = j; k < fenInt+j; ++k)
+	                {
+	                    P->cols[k].nb = 0;
+	                    P->cols[k].couleur = VIDE;
+	                }
+	                j=k;
+           		}
+           		else
+           		{
+           			fen[i]='\0';           		
+           		}
         }
 
 
@@ -148,82 +151,65 @@ T_Position translate(T_Position * P, char * fen)  // Voici un début de fontion 
 					 P->cols[j].couleur = ROU ;
 			break;
 
-			/*case '0':
+			case ' ':
+			break;
 
+			case 'r': P->trait = ROU; // Idem mais pour le trait
+			break;
 
-			case '1':
+			case 'R': P->trait = ROU;
+			break;
 
+			case 'j': P->trait = JAU;
+			break;
 
-			case '2':
+			case 'J': P->trait = JAU;
+			break;
 
-
-			case '3':
-
-
-			case '4':
-
-
-			case '5':
-	
-
-			case '6':
-		
-
-			case '7':
-			case '8': 
-			break;*/
+			case '\0' : if(place == 0)
+							printf("Le chiffre saisie dans n'est pas correct\n");
+						i=i-1;
+			break;
 
 			default: printf("La chaine fen saisie n'est pas correcte");
-				 printf("La valeur %c n'est pas reconnue",fen[i]);
+				 	 printf("La valeur %c n'est pas reconnue",fen[i]);
 			break;
 		}	
 		j++;
 	}
 
-	if(fen[i]==' '  && fen[i+2]=='\0')  // Une fois sorti de la boucle il faut récupérer le trait en vérifiant que l'utilisateur n'a pas rentré une valeure interdite
+	printf0("sortie de la boucle for\n entrée dans seconde boucle for\n");
+
+	for (int k = j; k <= 47; ++k)
 	{
-		switch(fen[i+1])
-		{
-			case 'r': P->trait = ROU; // Idem que tout à l'heure mais pour le trait
-			break;
-			/*Idem à finir et récurant*/
-			case 'R':
-			break;
-
-			case 'j':
-			break;
-
-			case 'J':
-			break;
-		}
+		P->cols[k].nb =0;
+		P->cols[k].couleur =VIDE;
 	}
 
-	for (int j = j; j <= 47; ++j)
-	{
-		
-	}
-
-//TODO : Il faut gérer le fait qu'il peut y avoir des chiffre dans le code fen pour désigne le nombre de case vide
-// TODO : Il afut gérer le fait que le code fen n'est pas toujours remplit jusqu'à l'indice 48, il faut donc à la fin du code fen définir le reste des cases comme des cases VIDE
-// TODO : Si vous pensez à autre chose rajoutez le !
+printf0("fin de la fonction translate");
 return *P;
 }
 
+
+
 void ecriture(T_Position pos, char * ficName,char * diagDesc,int numDiag)  // Même fonctionnement que pour le standalone
 {
-	FILE* fichier=NULL; //pointer de fichier
+	FILE* fichier=NULL; //pointeur de fichier
 
-	char chemin[50]="../web/data/"; //il s'agit du chemin du fichier dans lequel vont être stockés les données de la partie
+	char chemin[50]="../web/data/"; //il s'agit du chemin du fichier dans lequel vont être stockées les données de la partie
 	int i;
 
+	printf0("debut de la fonction ecriture\n");
 
+	strcat(chemin, ficName); // concatène chemin et cat
 
-	strcat(chemin, ficName); // concatère chemin et cat
-
+	printf0("ouverture du fichier en mode ecriture\n");
 	fichier=fopen(chemin,"w+");  // Ouvre le fichier en mode écriture
+
 
 	if(fichier!=NULL)
 	{
+		printf0("fichier!=NULL\n");
 		// On commence ici à créer le fichier Json
 		fprintf(fichier, "traiterJson({\n");
 		fprintf(fichier, "\"trait\":%d,\n", pos.trait);
@@ -231,17 +217,21 @@ void ecriture(T_Position pos, char * ficName,char * diagDesc,int numDiag)  // M�
 		fprintf(fichier, "\"notes\":\"%s\",\n", diagDesc);
 		fprintf(fichier, "\"cols\":[\n");
 
+		printf0("boucle for\n");
 		for(i=0; i<=47; i++)
 		{
 			fprintf(fichier, "{\"nb\":%d, \"couleur\":%d},\n", pos.cols[i].nb,pos.cols[i].couleur);
 		}
 
+		printf0("sortie de la boucle for \n");
+
 		fprintf(fichier, "]\n");
 		fprintf(fichier, "});");
 
+		printf0("fermeture du fichier \n");
 		fclose(fichier); // Referme le fichier
 	}
 	else printf("Le fichier n'existe pas\n");
-}
 
-// TODO : Fonction qui traduit le code Fen en chiffre et couleur a rentré dans le Json
+	printf0("fin de la fonction ecriture\n");
+}
