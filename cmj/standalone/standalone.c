@@ -6,7 +6,7 @@
 
 void sauvegarder(T_Position pos, char* chaine,T_Score scor);
 
-int main ()
+int main (int argc, char * argv[])
 {
 	T_Score s; 
 	T_Position p; 
@@ -14,15 +14,47 @@ int main ()
 	T_ListeCoups h;
 	octet origine;
 	octet destination;
-	char fic[16];
-	strcpy (fic, "refresh-data.js");
+	char fic[16]="";
+	
 	p = getPositionInitiale();
 	s=evaluerScore(p);
 	sauvegarder(p,fic,s);
-        afficherScore(s);
+    afficherScore(s);
  	l = getCoupsLegaux(p);
+ 	int type=0;
 	char rep;
  	printf("\n");
+
+
+ 	if(argc == 2)
+ 	{
+ 		strcpy (fic,argv[1]);
+ 		for (int i = 0; i < strlen(fic); ++i)
+ 		{
+ 			if(fic[i]=='.' && fic[i+1]=='j' && fic[i+2]=='s' && fic[i+3]=='\0')
+ 			{
+ 				printf0("Le type du fichier a été renseigné");
+ 				type++;
+ 			}
+ 		}
+
+ 		if(type!=1)
+ 		{
+ 			printf0("Le type du fichier n'est pas renseingné ou mal renseingné");
+ 			type = strlen(fic);
+ 			fic[type] = '.';
+ 			fic[type+1] = 'j';
+ 			fic[type+2] = 's';
+ 			fic[type+3] = '\0';
+ 		}
+
+ 	}
+ 	else
+ 	{
+ 		strcpy (fic, "refresh-data.js");
+ 	}
+
+ 	printf1("Nom de fichier correct : %s",fic);
 
  	while(l.nb!=0)
  	{       if(p.trait == 1) { 
@@ -74,6 +106,8 @@ return 0;
 void sauvegarder(T_Position pos, char* chaine,	T_Score scor)
 {
 	FILE* fichier=NULL; //pointer de fichier
+
+	printf1("chaine = %s",chaine);
 
 	char chemin[50]="../web/data/"; //LE FICHIER DONT LES DONNEES DE LA PARTIES SOUS FORMATS JSON SERONT STOCKES
 	int i;
