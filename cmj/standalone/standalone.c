@@ -18,7 +18,7 @@ int main (int argc, char * argv[])
 	
 	p = getPositionInitiale();
 	s=evaluerScore(p);
-	sauvegarder(p,fic,s);
+	
     afficherScore(s);
  	l = getCoupsLegaux(p);
  	int type=0;
@@ -53,6 +53,7 @@ int main (int argc, char * argv[])
  	{
  		strcpy (fic, "refresh-data.js");
  	}
+ 	sauvegarder(p,fic,s);
 
  	printf1("Nom de fichier correct : %s",fic);
 
@@ -103,7 +104,7 @@ int main (int argc, char * argv[])
 return 0;
 }
 
-void sauvegarder(T_Position pos, char* chaine,	T_Score scor)
+void sauvegarder(T_Position pos, char* chaine,	T_Score scor)  // Fonction qui permet de modifier le Json avec la T_Position
 {
 	FILE* fichier=NULL; //pointer de fichier
 
@@ -130,7 +131,7 @@ void sauvegarder(T_Position pos, char* chaine,	T_Score scor)
 		fprintf(fichier, "\"scoreR5\":%d,\n", scor.nbR5);
 		fprintf(fichier, "\"cols\":[\n");
 
-		for(i=0; i<=47; i++)
+		for(i=0; i<=NBCASES-1; i++)
 		{
 			fprintf(fichier, "{\"nb\":%d, \"couleur\":%d},\n", pos.cols[i].nb,pos.cols[i].couleur);
 		}
