@@ -6,46 +6,71 @@
 #include "moteur.h"
 
 
-void testCoup(int pot,int *max,int i)
+int testCoup(int pot,int max,int i)
 {
-	if(pot>*(max))
+	if(pot>max)
 	{
-		*(max)=pot;
+		max=pot;
+		 
 		ecrireIndexCoup(i);
 	}
-
+	return max;
 }
 
-void coupVoisins(int d,T_Position *P)
+int testCoup2(int pot,int max)
+{
+	if(pot>max)
+	{
+		max=pot;
+	}
+	return max;
+}
+
+int coupVoisins(octet dBis,octet oBis,T_Position P)
 {
 	T_Voisins voisins;
 	T_ListeCoups l;
-	voisins = getVoisins(d);
+	voisins = getVoisins(dBis);
 	int k = 0;
+	int pot;
+	int max = -10;
+	octet o,d;
+	l.nb = 0;
+	listerVoisins(dBis);
+	P = jouerCoup(P,oBis,dBis);
 
+	printf("--------------------voisins : %d-----------------\n",voisins.nb);
+	printf("--------------------voisins pos: %d-----------------\n",voisins.cases[0]);
 
 	for (int j = 0; j < voisins.nb; ++j)
 	{
-		if(P->cols[voisins.case[j]].nb + P->cols[voisins.case[d]].nb <= 5)
+		printf("nb = %d\n",P.cols[voisins.cases[j]].nb);
+		if(((P.cols[voisins.cases[j]].nb)!=0) && ((P.cols[voisins.cases[j]].nb + P.cols[voisins.cases[dBis]].nb )<= 5))
 		{
-			l.coups[k].origine = voisins.case[j];
-			l.coups[k].destination = d;
+			l.coups[k].origine = voisins.cases[j];
+			l.coups[k].destination = dBis;
 			k++;
 			l.nb++;
-			l.coups[k].origine = d;
-			l.coups[k].destination = voisins.case[j];
+			l.coups[k].origine = dBis;
+			l.coups[k].destination = voisins.cases[j];
 			k++;
 			l.nb++;
-		}
-		else
-		{
-			j--;
 		}
 	}
+	printf("%d",k);
+	afficherListeCoups(l);
 
-	if(currentPosition.cols[o].couleur == myColor)
+
+
+
+	for (int j = 0; j < l.nb; ++j)
+	{
+
+		o = l.coups[j].origine; 
+		d = l.coups[j].destination;
+		if(P.cols[o].couleur != P.trait)
 		{
-			switch(currentPosition.cols[d].nb + currentPosition.cols[d].nb)
+			switch(P.cols[o].nb + P.cols[o].nb)
 			{
 				case 2: pot = 2;
 				break;
@@ -54,7 +79,7 @@ void coupVoisins(int d,T_Position *P)
 				break;
 
 				case 4: pot = 4;
-						coupVoisins(d);
+						//coupVoisins(d);
 				break;
 
 				case 5:pot = 5;
@@ -63,7 +88,7 @@ void coupVoisins(int d,T_Position *P)
 		}
 		else
 		{
-			switch(currentPosition.cols[d].nb + currentPosition.cols[d].nb)
+			switch(P.cols[d].nb + P.cols[d].nb)
 			{
 				case 2: pot = -2;
 
@@ -79,6 +104,9 @@ void coupVoisins(int d,T_Position *P)
 				break;
 			}
 		}
+		max = testCoup2(pot,max);
+	}
+		return max;
 }
 
 void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
@@ -90,10 +118,11 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 	octet o, d; 
 	octet myColor = currentPosition.trait; 
 
-	// afficherListeCoups(listeCoups);
+	//afficherListeCoups(listeCoups);
 
 	printf("Ma couleur : %s\n", COLNAME(currentPosition.trait));
-	for(i=0;i<listeCoups.nb; i++) {
+	for(i=0;i<listeCoups.nb; i++)
+	{
 		o = listeCoups.coups[i].origine; 
 		d = listeCoups.coups[i].destination;  
 		printf("Coup %d : ", i); 
@@ -101,36 +130,39 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 		printf("%d (%d - %s) \n", d, currentPosition.cols[d].nb, COLNAME(currentPosition.cols[d].couleur)); 
 
 	// Si je peux gagner une colonne, je la prends 
-		if ((currentPosition.cols[o].couleur == myColor)
-			&& (currentPosition.cols[d].nb + currentPosition.cols[d].nb == 5) ) {
+		/*if ((currentPosition.cols[o].couleur == myColor)
+			&& (currentPosition.cols[o].nb + currentPosition.cols[d].nb == 5) ) {
 
 				printf("On choisit ce coup ! \n"); 
 				ecrireIndexCoup(i);
 				return; // on quitte la fonction 
-			}
+			}*/
 
 		if(currentPosition.cols[o].couleur == myColor)
 		{
-			switch(currentPosition.cols[d].nb + currentPosition.cols[d].nb)
+			printf("\n\nla somme = %d\n\n",currentPosition.cols[d].nb + currentPosition.cols[d].nb);
+			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
 			{
-				case 2: pot = 2;
+				case 2: pot = coupVoisins(d,o,currentPosition);
+						printf("pot = %d",pot);
 				break;
 
-				case 3: pot = 3;
+				case 3: pot = coupVoisins(d,o,currentPosition);;
 				break;
 
-				case 4: pot = 4;
-						coupVoisins(d,&currentPosition);
+				case 4:
+						pot = coupVoisins(d,o,currentPosition);;
 				break;
 
 				case 5:pot = 5;
 				break;
 			}
-			testCoup(pot,&max,i);
+			max = testCoup(pot,max,i);
+			
 		}
 		else
 		{
-			switch(currentPosition.cols[d].nb + currentPosition.cols[d].nb)
+			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
 			{
 				case 2: pot = -2;
 
@@ -145,10 +177,11 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 				case 5:pot = -5;
 				break;
 			}
+			max = testCoup(pot,max,i);
 		}
 
-
-	} 
+	}
+	//ecrireIndexCoup(i);
  
 
 
