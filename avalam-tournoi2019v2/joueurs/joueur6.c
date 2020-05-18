@@ -95,7 +95,6 @@ int test(octet dBis,octet oBis,T_Position P)
 		}
 	}*/
 	return min;
-
 }
 
 int coupVoisins(octet dBis,octet oBis,T_Position P)
@@ -159,9 +158,9 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 	afficherListeCoups(l);
 
 
-	if(l.nb == 0 && Color != P.trait)
+	if(l.nb == 0 && Color != P.trait) //S'il ne reste plus de coup et que le sommet=ennemi alors on attribue un pot ennemi
 	{
-		min = 3;
+		min = 3; //TODO: A augmenter peut etre ?
 	}
 	else
 	{
@@ -170,7 +169,7 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 
 			o = l.coups[j].origine; 
 			d = l.coups[j].destination;
-			if(P.cols[o].couleur != P.trait)
+			if(P.cols[o].couleur != P.trait) //Si la colonne final est du trait adverse
 			{
 				switch(P.cols[o].nb + P.cols[d].nb)
 				{
@@ -184,7 +183,7 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 					case 5:pot = 5;
 					break;
 				}
-				min = calculMin(pot,min);
+				min = calculMin(pot,min); //On transforme le potentiel en potentiel adverse
 			}
 			else
 			{
@@ -251,7 +250,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 				ecrireIndexCoup(i);
 				return; // on quitte la fonction 
 			}*/
-		//Jaune sur jaune
+		//Ami sur ami
 		if(currentPosition.cols[o].couleur == myColor && currentPosition.cols[d].couleur == myColor)
 		{
 			printf("\n\nla somme = %d\n\n",currentPosition.cols[d].nb + currentPosition.cols[d].nb);
@@ -274,7 +273,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 			max = testCoup(pot,max,i);
 			
 		}
-		// jaune sur rouge
+		// Ami sur ennemi
 		else if(currentPosition.cols[o].couleur == myColor && currentPosition.cols[d].couleur != myColor)
 		{
 			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
@@ -295,7 +294,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 			}
 			max = testCoup(pot,max,i);
 		}
-		// Rouge sur rouge
+		// Ennemi sur ennemi
 		else if(currentPosition.cols[o].couleur != myColor && currentPosition.cols[d].couleur != myColor)//TODO
 		{
 			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
@@ -315,10 +314,21 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 			}
 			max = testCoup(pot,max,i);
 		}
-		//rouge sur jaune (à ne pas faire)
+		//Ennemi sur ami (à ne pas faire)
 		else//TODO
 		{
-			
+            case 2: pot = -20;
+
+            break;
+
+            case 3: pot = -30;
+            break;
+
+            case 4: pot = -40;
+            break;
+
+            case 5:pot = -50;
+            break;
 		}
 
 	}

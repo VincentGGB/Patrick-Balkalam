@@ -11,7 +11,7 @@ dep:
 LIB=-L../tournoi/lib
 INC=-I../include
 
-SRC=humain1.c humain2.c joueur1.c joueur2.c joueur3.c joueur4.c joueur5.c
+SRC=humain1.c humain2.c joueur1.c joueur2.c joueur3.c joueur4.c joueur5.c joueur6.c
 EXE=$(SRC:.c=.exe)
 STATIC=$(SRC:.c=.static)
 
