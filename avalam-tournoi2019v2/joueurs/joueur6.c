@@ -26,7 +26,7 @@ int calculMin(int pot,int min)
 	return min;
 }
 
-int test(octet dBis,octet oBis,T_Position P)
+int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si on peut prendre le point juste derriere le coup ennemi
 {
 	T_Voisins voisins;
 	T_ListeCoups l;
@@ -158,9 +158,9 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 	afficherListeCoups(l);
 
 
-	if(l.nb == 0 && Color != P.trait) //S'il ne reste plus de coup et que le sommet=ennemi alors on attribue un pot ennemi
+	if(l.nb == 0 && Color == P.trait) //S'il ne reste plus de coup et que le sommet=ami sur destination ennemi alors on attribue le minimum pot +3 > Coup Interresant pour nous
 	{
-		min = 3; //TODO: A augmenter peut etre ?
+		min = 3; //TODO: A augmenter peut etre
 	}
 	else
 	{
@@ -169,7 +169,7 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 
 			o = l.coups[j].origine; 
 			d = l.coups[j].destination;
-			if(P.cols[o].couleur != P.trait) //Si la colonne final est du trait adverse
+			if(P.cols[o].couleur != P.trait) //Si la colonne final est du trait ami > Coup Interresant pour nous
 			{
 				switch(P.cols[o].nb + P.cols[d].nb)
 				{
@@ -183,11 +183,11 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 					case 5:pot = 5;
 					break;
 				}
-				min = calculMin(pot,min); //On transforme le potentiel en potentiel adverse
+				min = calculMin(pot,min); //On compare au min le plus bas
 			}
 			else
 			{
-				switch(P.cols[o].nb + P.cols[d].nb)
+				switch(P.cols[o].nb + P.cols[d].nb) //Tour ennemi > Coup dangereux
 				{
 					case 3: printf("test1");
 					pot = 3 + test(d,o,P);
@@ -204,17 +204,17 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 			}
 		}
 		printf("\ncptAm : %d && cptEn : %d\n",cptAm,cptEn);
-		if(cptAm < 1 && cptEn > 1)
+		if(cptAm == 0 && cptEn >= 1) //Pas d'ami et au moins un ennemi autour
 		{
 			min = -15;
 		}
-		else if(cptEn == 0)
+		else if(cptEn == 0) //Pas d'ennemi autour
 		{
 			min = 7;
 		}
 	}
 	printf("voisEn : %d",voisEn);
-	if(voisEn ==0)
+	if(voisEn == 0) //Si tour ami pas en danger
 	{
 		min=-7;
 	}
@@ -315,7 +315,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 			max = testCoup(pot,max,i);
 		}
 		//Ennemi sur ami (à ne pas faire)
-		else//TODO
+		else
 		{
             case 2: pot = -20;
 
