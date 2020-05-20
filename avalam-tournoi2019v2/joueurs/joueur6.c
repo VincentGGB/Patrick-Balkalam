@@ -6,14 +6,27 @@
 #include "moteur.h"
 
 
-int testCoup(int pot,int max,int i)
+int testCoup(int pot,int max,int i,T_Position P)
 {
-	if(pot>max)
+	if(P.trait==2)
 	{
-		max=pot;
+		if(pot>=max)
+		{
+			max=pot;
 		 
-		ecrireIndexCoup(i);
+			ecrireIndexCoup(i);
+		}
 	}
+	else
+	{
+		if(pot>max)
+		{
+			max=pot;
+		 
+			ecrireIndexCoup(i);
+		}
+	}
+	
 	return max;
 }
 
@@ -41,9 +54,6 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 	int Color = P.cols[dBis].couleur;
 	P = jouerCoup(P,oBis,dBis);
 
-	printf("--------------------voisins : %d-----------------\n",voisins.nb);
-	printf("--------------------voisins pos: %d-----------------\n",voisins.cases[0]);
-
 	for (int j = 0; j < voisins.nb; ++j)
 	{
 		printf("nb = %d\n",P.cols[voisins.cases[j]].nb);
@@ -59,167 +69,163 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 			l.nb++;
 		}
 	}
-	printf("%d",k);
 	afficherListeCoups(l);
 
 	if(l.nb == 0)
 	{
 		min = -10;
 	}
-	/*else
-	{
-		for (int j = 0; j < l.nb; ++j)
-		{
-			printf("test3");
-			o = l.coups[j].origine; 
-			d = l.coups[j].destination;
-			if(P.cols[o].couleur == P.trait)
-			{
-				switch(P.cols[o].nb + P.cols[d].nb)
-				{
-					case 5:pot = 4;
-					break;
-				}
-				min = calculMin(pot,min);
-			}
-			else
-			{
-				cpt++;
-				switch(P.cols[o].nb + P.cols[d].nb)
-				{
-					case 5:pot = -10;
-					break;
-				}
-				min = calculMin(pot,min);
-			}
-		}
-	}*/
 	return min;
 }
 
 int coupVoisins(octet dBis,octet oBis,T_Position P)
 {
-	T_Voisins voisins;
-	T_Voisins voisins2;
-	T_ListeCoups l;
-	voisins = getVoisins(dBis);
-	voisins2 = getVoisins(oBis);
-	int k = 0;
+	T_Voisins voisins;  //Voisins une fois le coup joué
+	T_Voisins voisinsoBis; //Voisins de l'origine avant de jouer le coup
+
+	T_ListeCoups l; // Liste de coup possible sur le coup que l'on va simuler
+
 	int pot;
 	int min = 0;
 	int cptEn = 0;
 	int cptAm = 0;
-	int voisEn =0;
-	octet o,d;
-	l.nb = 0;
-	listerVoisins(dBis);
-	int Color = P.cols[dBis].couleur;
+	int voisEnoBis =0;
+	int coloroBis = P.cols[oBis].couleur;
+	int colordBis = P.cols[dBis].couleur;
 
-	for (int j = 0; j < voisins2.nb; ++j)
+	octet o,d; // Origine et destination des coup possibles ennemi
+
+	voisins = getVoisins(dBis);    // On récupère les voisins
+	voisinsoBis = getVoisins(oBis); // On récupère les voisins de l'origine avant de jouer le coup
+
+	l.nb = 0;  // On initialise le nombre de coup possible à 0
+
+	listerVoisins(dBis); // Printf de debug
+
+
+	for (int j = 0; j < voisinsoBis.nb; ++j)
 	{
-		printf("voiEn -> Couleur : %d\n",P.cols[voisins2.cases[j]].couleur);
-		if(((P.cols[voisins2.cases[j]].nb)!=0) && (P.cols[voisins2.cases[j]].couleur != P.trait))
+		if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur != P.trait) && ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
 		{
-			voisEn++;
+			voisEnoBis++;  // Calcul du nombre de tour ennemi qui mette potentiellement en danger notre origine
 		}
 	}
-	P = jouerCoup(P,oBis,dBis);
 
-	printf("--------------------voisins : %d-----------------\n",voisins.nb);
-	printf("--------------------voisins pos: %d-----------------\n",voisins.cases[0]);
+	P = jouerCoup(P,oBis,dBis);  // Ou joue le coup pour simuler la position du plateau si le coup était joué.
+
+
+	/*Cette boucle for calcul la liste des coup possible entre la position de la tour joué	*/
+	/*et les voisins qu'elle possède.														*/
 
 	for (int j = 0; j < voisins.nb; ++j)
 	{
-		printf("nb = %d\n",P.cols[voisins.cases[j]].nb);
-		if(((P.cols[voisins.cases[j]].nb)!=0) && ((P.cols[voisins.cases[j]].nb + P.cols[dBis].nb )<= 5))
+		if(((P.cols[voisins.cases[j]].nb)!=0) && ((P.cols[voisins.cases[j]].nb + P.cols[dBis].nb )<= 5))//On test si le coup est possible
 		{
-			l.coups[k].origine = voisins.cases[j];
-			l.coups[k].destination = dBis;
-			k++;
+			/*Coup tour voisins sur tour joué*/
+			l.coups[l.nb].origine = voisins.cases[j];
+			l.coups[l.nb].destination = dBis;	
 			l.nb++;
-			l.coups[k].origine = dBis;
-			l.coups[k].destination = voisins.cases[j];
-			k++;
+
+			/*Coup tour joué sur tour voisins*/
+			l.coups[l.nb].origine = dBis;
+			l.coups[l.nb].destination = voisins.cases[j];
 			l.nb++;
+
 			if(P.cols[voisins.cases[j]].couleur != P.trait)
 			{
-				cptAm++;
-				printf("Couleur : %d",P.cols[voisins.cases[j]].couleur);
-
+				cptAm++; //Nombre de tour amis de la tour joué
 			}
 			else
 			{
-				cptEn++;
+				cptEn++; // Nombre de tour ennemis de la tour joué
 			}
 		}
 
 	}
-	printf("%d",k);
 	afficherListeCoups(l);
 
 
-	if(l.nb == 0 && Color == P.trait) //S'il ne reste plus de coup et que le sommet=ami sur destination ennemi alors on attribue le minimum pot +3 > Coup Interresant pour nous
+	if(l.nb == 0 && coloroBis !=P.trait && colordBis == P.trait) //S'il ne reste plus de coup et que le sommet=ami sur destination ennemi alors on attribue le minimum pot +3 > Coup Interresant pour nous
 	{
 		min = 3; //TODO: A augmenter peut etre
 	}
-	else
+	else if(l.nb==0 && colordBis !=P.trait)//Si il n'y a plus de coup possible et que la couleur de la tour dBis est la notre
+	{
+		min=-7; // Ce coup n'est pas à joué, c'est un coup inutile, mais pas dangereux
+	}
+	else // On calcul le pire coup que l'adversaire peut nous faire après avoir joué
 	{
 		for (int j = 0; j < l.nb; ++j)
 		{
 
-			o = l.coups[j].origine; 
-			d = l.coups[j].destination;
+			o = l.coups[j].origine;    // Nouvelle origine du coup adverse
+			d = l.coups[j].destination; // Nouvelle origine du coup adverse
+
 			if(P.cols[o].couleur != P.trait) //Si la colonne final est du trait ami > Coup Interresant pour nous
 			{
 				switch(P.cols[o].nb + P.cols[d].nb)
 				{
+					//tour de 3
 					case 3: pot = 3;
 					break;
 
+					//tour de 4
 					case 4: pot = 4;
-							//coupVoisins(d);
 					break;
 
+					//tour de 5
 					case 5:pot = 5;
 					break;
 				}
-				min = calculMin(pot,min); //On compare au min le plus bas
+				min = calculMin(pot,min); //reCalcul du pire coup
 			}
 			else
 			{
 				switch(P.cols[o].nb + P.cols[d].nb) //Tour ennemi > Coup dangereux
 				{
-					case 3: printf("test1");
-					pot = 3 + test(d,o,P);
+					//tour de 3
+					case 3: pot = 3 + test(d,o,P);
 					break;
 
-					case 4: printf("test2");
-					pot = 3 + test(d,o,P);
+					//tour de 4
+					case 4: pot = 3 + test(d,o,P);
 					break;
 
+					//tour de 5
 					case 5:pot = -10;
 					break;
 				}
 				min = calculMin(pot,min);
 			}
 		}
-		printf("\ncptAm : %d && cptEn : %d\n",cptAm,cptEn);
+
 		if(cptAm == 0 && cptEn >= 1) //Pas d'ami et au moins un ennemi autour
 		{
 			min = -15;
 		}
-		else if(cptEn == 0) //Pas d'ennemi autour
+		else if(cptEn == 0 && colordBis == P.trait) //Pas d'ennemi autour et couleur de dBis ennemi
 		{
-			min = 7;
+			if(coloroBis != P.trait) // Si la couleur d'origine est la notre
+			{
+				min = 7;
+			}
+			else if(cptAm>=2 && min!=-10)// Si au moins 2 amis et que l'ennemi ne peut pas faire de tour de 5
+			{
+				min = 7;
+			}
+			else
+			{
+				min = -7;
+			}
 		}
 	}
-	printf("voisEn : %d",voisEn);
-	if(voisEn == 0) //Si tour ami pas en danger
+
+	if(voisEnoBis == 0) //Si la tour oBis n'est pas en danger
 	{
 		min=-7;
 	}
-		printf("\n\nmini = %d\n\n",min);
-		return min;
+	printf("\n\nmini = %d\n\n",min);
+	return min;
 }
 
 void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
@@ -234,105 +240,134 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 	//afficherListeCoups(listeCoups);
 
 	printf("Ma couleur : %s\n", COLNAME(currentPosition.trait));
+
 	for(i=0;i<listeCoups.nb; i++)
 	{
-		o = listeCoups.coups[i].origine; 
-		d = listeCoups.coups[i].destination;  
+		o = listeCoups.coups[i].origine;    // position origine du coup
+		d = listeCoups.coups[i].destination;// position destination du coup  
 		printf("Coup %d : ", i); 
 		printf("%d (%d - %s) ->", o, currentPosition.cols[o].nb, COLNAME(currentPosition.cols[o].couleur));
 		printf("%d (%d - %s) \n", d, currentPosition.cols[d].nb, COLNAME(currentPosition.cols[d].couleur)); 
 
-	// Si je peux gagner une colonne, je la prends 
-		/*if ((currentPosition.cols[o].couleur == myColor)
-			&& (currentPosition.cols[o].nb + currentPosition.cols[d].nb == 5) ) {
-
-				printf("On choisit ce coup ! \n"); 
-				ecrireIndexCoup(i);
-				return; // on quitte la fonction 
-			}*/
 		//Ami sur ami
 		if(currentPosition.cols[o].couleur == myColor && currentPosition.cols[d].couleur == myColor)
 		{
-			printf("\n\nla somme = %d\n\n",currentPosition.cols[d].nb + currentPosition.cols[d].nb);
 			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
 			{
+				//tour de 2
 				case 2: pot = 3 + coupVoisins(d,o,currentPosition);
 						printf("pot = %d",pot);
 				break;
-
+				//tour de 3
 				case 3: pot = 3 + coupVoisins(d,o,currentPosition);
 				break;
-
+				//tour de 4
 				case 4:
-						pot = 4 + coupVoisins(d,o,currentPosition);
+						pot = 2 + coupVoisins(d,o,currentPosition);
 				break;
-
-				case 5:pot = 5;
+				//tour de 5
+				case 5:pot = 5;  // TODO : tester si on peut pas la faire plus tard
 				break;
 			}
-			max = testCoup(pot,max,i);
+			max = testCoup(pot,max,i,currentPosition); // reCalcul du meilleur coup
 			
 		}
 		// Ami sur ennemi
 		else if(currentPosition.cols[o].couleur == myColor && currentPosition.cols[d].couleur != myColor)
 		{
-			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
+			if(currentPosition.cols[o].nb < currentPosition.cols[d].nb)// Il vaut mieux jouer un ami sur 2 ennemi
 			{
-				case 2: pot = 6 + coupVoisins(d,o,currentPosition);
-						printf("pot = %d",pot);
-				break;
+				switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
+				{
+					//tour de 2
+					case 2: pot = 6 + coupVoisins(d,o,currentPosition);
+							printf("pot = %d",pot);
+					break;
 
-				case 3: pot = 6 + coupVoisins(d,o,currentPosition);
-				break;
+					//tour de 3
+					case 3: pot = 6 + coupVoisins(d,o,currentPosition);
+					break;
 
-				case 4:
-						pot = 5 + coupVoisins(d,o,currentPosition);
-				break;
+					//tour de 4
+					case 4:
+							pot = 5 + coupVoisins(d,o,currentPosition);
+					break;
 
-				case 5:pot = 10;
-				break;
+					//tour de 6
+					case 5:pot = 10; //Pas de test à faire ici normalement
+					break;
+				}
 			}
-			max = testCoup(pot,max,i);
+			else // Plutôt que 2 ami sur un ennemi
+			{
+				switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
+				{
+					//tour de 2
+					case 2: pot = 4 + coupVoisins(d,o,currentPosition);
+							printf("pot = %d",pot);
+					break;
+
+					//tour de 3
+					case 3: pot = 4 + coupVoisins(d,o,currentPosition);
+					break;
+
+					//tour de 4
+					case 4:
+							pot = 3 + coupVoisins(d,o,currentPosition);
+					break;
+
+					//tour de 5
+					case 5:pot = 10; // Pas de test à faire ici normalement
+					break;
+				}
+			}
+			max = testCoup(pot,max,i,currentPosition);// reCalcul du meilleur coup
 		}
 		// Ennemi sur ennemi
 		else if(currentPosition.cols[o].couleur != myColor && currentPosition.cols[d].couleur != myColor)//TODO
 		{
 			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
 			{
-				case 2: pot = -2;
-
+				//tour de 2
+				case 2: pot = 4+coupVoisins(d,o,currentPosition);
 				break;
 
-				case 3: pot = -3;
+				//tour de 3
+				case 3: pot = 4+coupVoisins(d,o,currentPosition);
 				break;
 
+				//tour de 4
 				case 4: pot = -4;
 				break;
 
+				//tour de 5
 				case 5:pot = -5;
 				break;
 			}
-			max = testCoup(pot,max,i);
+			max = testCoup(pot,max,i,currentPosition);// reCalcul du meilleur coup
 		}
 		//Ennemi sur ami (à ne pas faire)
 		else
 		{
-            case 2: pot = -20;
+			switch(currentPosition.cols[o].nb + currentPosition.cols[d].nb)
+			{
+				//tour de 2
+	            case 2: pot = -20;
+	            break;
 
-            break;
+	            //tour de 3
+	            case 3: pot = -30;
+	            break;
 
-            case 3: pot = -30;
-            break;
+	            //tour de 4
+	            case 4: pot = -40;
+	            break;
 
-            case 4: pot = -40;
-            break;
-
-            case 5:pot = -50;
-            break;
+	            //tour de 5
+	            case 5:pot = -50;
+	            break;
+	        }
 		}
 
 	}
- 
-
-
 }
