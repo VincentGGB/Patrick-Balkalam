@@ -5,6 +5,7 @@
 #include "avalam.h"
 #include "moteur.h"
 
+int coupVoisins(octet dBis,octet oBis,T_Position P);
 
 int testCoup(int pot,int max,int i,T_Position P)
 {
@@ -30,6 +31,14 @@ int testCoup(int pot,int max,int i,T_Position P)
 	return max;
 }
 
+int calculMax(int pot,int max)
+{
+	if(pot>max)
+	{
+		max=pot;
+	}
+}
+
 int calculMin(int pot,int min)
 {
 	if(pot<min)
@@ -46,8 +55,10 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 	voisins = getVoisins(dBis);
 	int k = 0;
 	int pot;
-	int min = 0;
+	int max = -5;
 	int cpt = 0;
+	int cptAm =0;
+	int cptEn =0;
 	octet o,d;
 	l.nb = 0;
 	listerVoisins(dBis);
@@ -67,21 +78,157 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 			l.coups[k].destination = voisins.cases[j];
 			k++;
 			l.nb++;
+			if(P.cols[voisins.cases[j]].couleur == P.trait)
+			{
+				cptAm++; //Nombre de tour amis de la tour joué
+			}
+			else
+			{
+				cptEn++; // Nombre de tour ennemis de la tour joué
+			}
 		}
 	}
 	afficherListeCoups(l);
 
-	if(l.nb == 0)
+	if((l.nb == 0) || (cptAm==0 && cptEn > 0))
 	{
-		min = -10;
+		max = -10;
 	}
-	return min;
+	else
+	{
+		for(int i=0;i<l.nb; i++)
+		{
+			o = l.coups[i].origine;    // position origine du coup
+			d = l.coups[i].destination;// position destination du coup  
+
+			//Ami sur ami
+			if(P.cols[o].couleur == P.trait && P.cols[d].couleur == P.trait)
+			{
+				switch(P.cols[o].nb + P.cols[d].nb)
+				{
+					//tour de 2
+					case 2: pot = 3 + coupVoisins(d,o,P);
+					break;
+					//tour de 3
+					case 3: pot = 3 + coupVoisins(d,o,P);
+					break;
+					//tour de 4
+					case 4:
+							pot = 2 + coupVoisins(d,o,P);
+					break;
+					//tour de 5
+					case 5:pot = 10;  // TODO : tester si on peut pas la faire plus tard
+					break;
+				}
+				max = calculMax(pot,max); // reCalcul du meilleur coup
+				
+			}
+			// Ami sur ennemi
+			else if(P.cols[o].couleur == P.trait && P.cols[d].couleur != P.trait)
+			{
+				if(P.cols[o].nb < P.cols[d].nb)// Il vaut mieux jouer un ami sur 2 ennemi
+				{
+					switch(P.cols[o].nb + P.cols[d].nb)
+					{
+						//tour de 2
+						case 2: pot = 6 + coupVoisins(d,o,P);
+						break;
+
+						//tour de 3
+						case 3: pot = 6 + coupVoisins(d,o,P);
+						break;
+
+						//tour de 4
+						case 4:
+								pot = 5 + coupVoisins(d,o,P);
+						break;
+
+						//tour de 6
+						case 5:pot = 15; //Pas de test à faire ici normalement
+						break;
+					}
+				}
+				else // Plutôt que 2 ami sur un ennemi
+				{
+					switch(P.cols[o].nb + P.cols[d].nb)
+					{
+						//tour de 2
+						case 2: pot = 4 + coupVoisins(d,o,P);
+						break;
+
+						//tour de 3
+						case 3: pot = 4 + coupVoisins(d,o,P);
+						break;
+
+						//tour de 4
+						case 4:
+								pot = 3 + coupVoisins(d,o,P);
+						break;
+
+						//tour de 5
+						case 5:pot = 13; // Pas de test à faire ici normalement
+						break;
+					}
+				}
+				max = calculMax(pot,max);// reCalcul du meilleur coup
+			}
+			// Ennemi sur ennemi
+			else if(P.cols[o].couleur != P.trait && P.cols[d].couleur != P.trait)//TODO
+			{
+				switch(P.cols[o].nb + P.cols[d].nb)
+				{
+					//tour de 2
+					case 2: pot = 4+coupVoisins(d,o,P);
+					break;
+
+					//tour de 3
+					case 3: pot = 4+coupVoisins(d,o,P);
+					break;
+
+					//tour de 4
+					case 4: pot = -4;
+					break;
+
+					//tour de 5
+					case 5:pot = 0;
+					break;
+				}
+				max = calculMax(pot,max);// reCalcul du meilleur coup
+			}
+			//Ennemi sur ami (à ne pas faire)
+			else
+			{
+				switch(P.cols[o].nb + P.cols[d].nb)
+				{
+					//tour de 2
+		            case 2: pot = -20;
+		            break;
+
+		            //tour de 3
+		            case 3: pot = -30;
+		            break;
+
+		            //tour de 4
+		            case 4: pot = -40;
+		            break;
+
+		            //tour de 5
+		            case 5:pot = -50;
+		            break;
+		        }
+			}
+
+		}
+	}
+	
+	return max;
 }
 
 int coupVoisins(octet dBis,octet oBis,T_Position P)
 {
 	T_Voisins voisins;  //Voisins une fois le coup joué
 	T_Voisins voisinsoBis; //Voisins de l'origine avant de jouer le coup
+	T_Voisins voisVois;
 
 	T_ListeCoups l; // Liste de coup possible sur le coup que l'on va simuler
 
@@ -90,8 +237,11 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 	int cptEn = 0;
 	int cptAm = 0;
 	int voisEnoBis =0;
+	int voisAmoBis =0;
 	int coloroBis = P.cols[oBis].couleur;
 	int colordBis = P.cols[dBis].couleur;
+	int voisVoisAm=0,voisVoisEn=0;
+	int danger=0;
 
 	octet o,d; // Origine et destination des coup possibles ennemi
 
@@ -108,6 +258,28 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 		if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur != P.trait) && ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
 		{
 			voisEnoBis++;  // Calcul du nombre de tour ennemi qui mette potentiellement en danger notre origine
+		}
+		else if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur == P.trait)&& ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
+		{
+			voisAmoBis++;
+			voisVois = getVoisins(voisinsoBis.cases[j]);
+
+			for (int k = 0; k < voisVois.nb; ++k)
+			{
+				if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur != P.trait) && ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
+				{
+					voisVoisEn++;  // Calcul du nombre de tour ennemi qui mette potentiellement en danger notre origine
+				}
+				else if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur == P.trait)&& ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
+				{
+					voisVoisAm++;
+				}
+			}
+			if(voisVoisAm == 1 && voisVoisEn != 0)
+			{
+				danger=1;
+				min = -10;
+			}
 		}
 	}
 
@@ -145,9 +317,17 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 	afficherListeCoups(l);
 
 
-	if(l.nb == 0 && coloroBis !=P.trait && colordBis == P.trait) //S'il ne reste plus de coup et que le sommet=ami sur destination ennemi alors on attribue le minimum pot +3 > Coup Interresant pour nous
+	if(l.nb == 0 && coloroBis !=P.trait && colordBis == P.trait && danger ==0) //S'il ne reste plus de coup et que le sommet=ami sur destination ennemi alors on attribue le minimum pot +3 > Coup Interresant pour nous
 	{
-		min = 3; //TODO: A augmenter peut etre
+		if(voisAmoBis != 0 && voisEnoBis==0)
+		{
+			min = 12; //TODO: A augmenter peut etre
+		}
+		else
+		{
+			min = 10; //TODO: A augmenter peut etre
+		}
+ 		
 	}
 	else if(l.nb==0 && colordBis !=P.trait)//Si il n'y a plus de coup possible et que la couleur de la tour dBis est la notre
 	{
@@ -203,13 +383,21 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 		{
 			min = -15;
 		}
-		else if(cptEn == 0 && colordBis == P.trait) //Pas d'ennemi autour et couleur de dBis ennemi
+		else if(cptEn == 0 && colordBis == P.trait && danger==0) //Pas d'ennemi autour et couleur de dBis ennemi
 		{
 			if(coloroBis != P.trait) // Si la couleur d'origine est la notre
 			{
-				min = 7;
+				if(voisAmoBis != 0 && voisEnoBis==1)
+				{
+					min = 9;
+				}
+				else
+				{
+					min = 7;
+				}
+				
 			}
-			else if(cptAm>=2 && min!=-10)// Si au moins 2 amis et que l'ennemi ne peut pas faire de tour de 5
+			else if(cptAm>=2 && min!=-10 && danger==0)// Si au moins 2 amis et que l'ennemi ne peut pas faire de tour de 5
 			{
 				min = 7;
 			}
@@ -294,7 +482,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 					break;
 
 					//tour de 6
-					case 5:pot = 10; //Pas de test à faire ici normalement
+					case 5:pot = 15; //Pas de test à faire ici normalement
 					break;
 				}
 			}
@@ -317,7 +505,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 					break;
 
 					//tour de 5
-					case 5:pot = 10; // Pas de test à faire ici normalement
+					case 5:pot = 13; // Pas de test à faire ici normalement
 					break;
 				}
 			}
@@ -341,7 +529,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 				break;
 
 				//tour de 5
-				case 5:pot = -5;
+				case 5:pot = 12;
 				break;
 			}
 			max = testCoup(pot,max,i,currentPosition);// reCalcul du meilleur coup
