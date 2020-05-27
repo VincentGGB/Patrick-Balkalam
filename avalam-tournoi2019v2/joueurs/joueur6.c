@@ -9,13 +9,13 @@ int coupVoisins(octet dBis,octet oBis,T_Position P);
 
 int testCoup(int pot,int max,int i,T_Position P)
 {
-	if(P.trait==2)
+	if(P.trait==2) //On test la couleur du trait pour effectuer de quelconques modifications  
 	{
-		if(pot>=max)
+		if(pot>max) // On échange la valeur de max si elle est inférieur au potentiel du coup
 		{
 			max=pot;
 		 
-			ecrireIndexCoup(i);
+			ecrireIndexCoup(i); // On écrit le coup dans ce cas
 		}
 	}
 	else
@@ -33,7 +33,7 @@ int testCoup(int pot,int max,int i,T_Position P)
 
 int calculMax(int pot,int max)
 {
-	if(pot>max)
+	if(pot>max) // On échange la valeur de max si elle est inférieur au potentiel du coup
 	{
 		max=pot;
 	}
@@ -41,56 +41,59 @@ int calculMax(int pot,int max)
 
 int calculMin(int pot,int min)
 {
-	if(pot<min)
+	if(pot<min) // On échange la valeur de min si elle est supérieur au potentiel du coup
 	{
 		min=pot;
 	}
 	return min;
 }
 
-int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si on peut prendre le point juste derriere le coup ennemi
+int test(octet dBis,octet oBis,T_Position P)/*Dans cette fonction on teste le meilleur coup que l'on peut faire après avoir regardé le pire coup de l'énnemi*/
 {
 	T_Voisins voisins;
 	T_ListeCoups l;
 	voisins = getVoisins(dBis);
-	int k = 0;
-	int pot;
-	int max = -5;
-	int cpt = 0;
-	int cptAm =0;
-	int cptEn =0;
-	octet o,d;
-	l.nb = 0;
-	listerVoisins(dBis);
-	int Color = P.cols[dBis].couleur;
-	P = jouerCoup(P,oBis,dBis);
 
-	for (int j = 0; j < voisins.nb; ++j)
+	int pot;		/*Le potentiel d'un coup*/
+	int max = -50;	/*Le potentiel maximum*/
+	int cptAm =0;	/*Le nombre de tour amies voisine de la tour joué*/
+	int cptEn =0;	/*Le nombre de tour ennemies voisine de la tour joué*/
+	int Color = P.cols[dBis].couleur;
+
+	octet o,d;		/*Octet d'origine et de destinations*/
+
+	l.nb = 0;		/*On initialise le nombre de voisins à 0*/
+	listerVoisins(dBis);
+	P = jouerCoup(P,oBis,dBis); //On simule le coup à jouer
+
+	for (int j = 0; j < voisins.nb; ++j) //  Recalcul de la liste des coups possible sur la tour joué
 	{
 		printf("nb = %d\n",P.cols[voisins.cases[j]].nb);
 		if(((P.cols[voisins.cases[j]].nb)!=0) && ((P.cols[voisins.cases[j]].nb + P.cols[dBis].nb )<= 5))
 		{
-			l.coups[k].origine = voisins.cases[j];
-			l.coups[k].destination = dBis;
-			k++;
+			/*Coup tour voisins sur tour joué*/
+			l.coups[l.nb].origine = voisins.cases[j];
+			l.coups[l.nb].destination = dBis;	
 			l.nb++;
-			l.coups[k].origine = dBis;
-			l.coups[k].destination = voisins.cases[j];
-			k++;
+
+			/*Coup tour joué sur tour voisins*/
+			l.coups[l.nb].origine = dBis;
+			l.coups[l.nb].destination = voisins.cases[j];
 			l.nb++;
+
 			if(P.cols[voisins.cases[j]].couleur == P.trait)
 			{
-				cptAm++; //Nombre de tour amis de la tour joué
+				cptAm++; //Nombre de tour amies de la tour joué
 			}
 			else
 			{
-				cptEn++; // Nombre de tour ennemis de la tour joué
+				cptEn++; // Nombre de tour ennemies de la tour joué
 			}
 		}
 	}
 	afficherListeCoups(l);
 
-	if((l.nb == 0) || (cptAm==0 && cptEn > 0))
+	if((l.nb == 0) || (cptAm==0 && cptEn > 0))// Ne pas joué le coup si plus aucun coup n'est possible après le coup énnemi
 	{
 		max = -10;
 	}
@@ -107,20 +110,20 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 				switch(P.cols[o].nb + P.cols[d].nb)
 				{
 					//tour de 2
-					case 2: pot = 3 + coupVoisins(d,o,P);
+					case 2: pot = 3 + coupVoisins(d,o,P); //On appel la fonction tour voisin
 					break;
 					//tour de 3
-					case 3: pot = 3 + coupVoisins(d,o,P);
+					case 3: pot = 3 + coupVoisins(d,o,P); // On appel la fonction tour voisin
 					break;
 					//tour de 4
 					case 4:
-							pot = 2 + coupVoisins(d,o,P);
+							pot = 2 + coupVoisins(d,o,P); // On appel la ...
 					break;
 					//tour de 5
-					case 5:pot = 10;  // TODO : tester si on peut pas la faire plus tard
+					case 5:pot = 10;
 					break;
 				}
-				max = calculMax(pot,max); // reCalcul du meilleur coup
+				max = calculMax(pot,max); // Recalcul du meilleur coup
 				
 			}
 			// Ami sur ennemi
@@ -166,11 +169,11 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 						break;
 
 						//tour de 5
-						case 5:pot = 13; // Pas de test à faire ici normalement
+						case 5:pot = 13;
 						break;
 					}
 				}
-				max = calculMax(pot,max);// reCalcul du meilleur coup
+				max = calculMax(pot,max);// Recalcul du meilleur coup
 			}
 			// Ennemi sur ennemi
 			else if(P.cols[o].couleur != P.trait && P.cols[d].couleur != P.trait)//TODO
@@ -193,7 +196,7 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 					case 5:pot = 0;
 					break;
 				}
-				max = calculMax(pot,max);// reCalcul du meilleur coup
+				max = calculMax(pot,max);// Recalcul du meilleur coup
 			}
 			//Ennemi sur ami (à ne pas faire)
 			else
@@ -221,7 +224,7 @@ int test(octet dBis,octet oBis,T_Position P) //TODO: Ameliorer en verifiant si o
 		}
 	}
 	
-	return max;
+	return max; // On retourne le potentiel maximum qui est récupérer dans la fonction coupVoisins
 }
 
 int coupVoisins(octet dBis,octet oBis,T_Position P)
@@ -232,21 +235,21 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 
 	T_ListeCoups l; // Liste de coup possible sur le coup que l'on va simuler
 
-	int pot;
-	int min = 0;
-	int cptEn = 0;
-	int cptAm = 0;
-	int voisEnoBis =0;
-	int voisAmoBis =0;
-	int coloroBis = P.cols[oBis].couleur;
-	int colordBis = P.cols[dBis].couleur;
-	int voisVoisAm=0,voisVoisEn=0;
-	int danger=0;
+	int pot;		//Le potentiel d'un coup
+	int min = 0;	//Le potentiel minimum d'un coup
+	int cptEn = 0;	//Le nombre de tour ennemies voisines de la tour joué
+	int cptAm = 0;	//Le nombre de tour ennemies voisines de la tour joué
+	int voisEnoBis =0;// Le nombre de tour ennemies voisines de notre tour origine Bis
+	int voisAmoBis =0;// Le nombre de tour amies voisines de notre tour origine Bis
+	int coloroBis = P.cols[oBis].couleur; // La couleur de la tour origine Bis
+	int colordBis = P.cols[dBis].couleur; // La couleur de la tour destination Bis
+	int voisVoisAm=0,voisVoisEn=0; // Le nombre de tour voisines amies/ennemies de d'une tour voisine de la tour origine Bis
+	int danger=0;	// Danger est à 1 si une tour voisine de la tour origine Bis va se retrouver seule face à l'ennemi après le coup
 
-	octet o,d; // Origine et destination des coup possibles ennemi
+	octet o,d; // Origine et destination des nouveaux coups possibles ennemi
 
-	voisins = getVoisins(dBis);    // On récupère les voisins
-	voisinsoBis = getVoisins(oBis); // On récupère les voisins de l'origine avant de jouer le coup
+	voisins = getVoisins(dBis);    // On récupère les voisins de la tour joué
+	voisinsoBis = getVoisins(oBis); // On récupère les voisins de l'origine Bis
 
 	l.nb = 0;  // On initialise le nombre de coup possible à 0
 
@@ -255,35 +258,36 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 
 	for (int j = 0; j < voisinsoBis.nb; ++j)
 	{
-		if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur != P.trait) && ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
+		if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur != P.trait) && ((P.cols[voisinsoBis.cases[j]].nb + P.cols[oBis].nb )<= 5))
 		{
-			voisEnoBis++;  // Calcul du nombre de tour ennemi qui mette potentiellement en danger notre origine
+			voisEnoBis++;  // Calcul du nombre de tours voisines ennemies de l'origine Bis
 		}
-		else if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur == P.trait)&& ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
+		else if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur == P.trait)&& ((P.cols[voisinsoBis.cases[j]].nb + P.cols[oBis].nb )<= 5))
 		{
-			voisAmoBis++;
-			voisVois = getVoisins(voisinsoBis.cases[j]);
+			voisAmoBis++; // Calcul du nombre de tours voisines amies de l'origine Bis
+			voisVois = getVoisins(voisinsoBis.cases[j]); // On récupère les voisins de la tour voisine amie de l'origine Bis
 
 			for (int k = 0; k < voisVois.nb; ++k)
 			{
-				if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur != P.trait) && ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
+				if(((P.cols[voisVois.cases[k]].nb)!=0) && (P.cols[voisVois.cases[k]].couleur != P.trait) && ((P.cols[voisVois.cases[k]].nb + P.cols[voisinsoBis.cases[j]].nb )<= 5))
 				{
-					voisVoisEn++;  // Calcul du nombre de tour ennemi qui mette potentiellement en danger notre origine
+					voisVoisEn++;  // Calcul du nombre de tours ennemies qui mettent potentiellement en danger notre tour voisine après le coup
 				}
-				else if(((P.cols[voisinsoBis.cases[j]].nb)!=0) && (P.cols[voisinsoBis.cases[j]].couleur == P.trait)&& ((P.cols[voisins.cases[j]].nb + P.cols[oBis].nb )<= 5))
+				else if(((P.cols[voisVois.cases[k]].nb)!=0) && (P.cols[voisVois.cases[k]].couleur == P.trait)&& ((P.cols[voisVois.cases[k]].nb + P.cols[voisinsoBis.cases[j]].nb )<= 5))
 				{
-					voisVoisAm++;
+					voisVoisAm++;// Calcul du nombre de tours amies qui sécurisent notre tour voisine
 				}
 			}
-			if(voisVoisAm == 1 && voisVoisEn != 0)
+			if(voisVoisAm == 1 && voisVoisEn != 0) // Si la tour voisine possède une unique tour voisine ami(origine Bis) et au moins un ennemi
 			{
-				danger=1;
-				min = -10;
+				danger=1;  // On fixe danger à 1 pour indiquer qu'il ne faut pas augmenter le potentiel pour le reste de la fonction
+				min = -10; // On place min à -10 par sécurité
 			}
 		}
 	}
+	printf("\ndanger = %d",danger);
 
-	P = jouerCoup(P,oBis,dBis);  // Ou joue le coup pour simuler la position du plateau si le coup était joué.
+	P = jouerCoup(P,oBis,dBis);  // Ou joue le coup pour simuler la position du plateau si le coup était joué
 
 
 	/*Cette boucle for calcul la liste des coup possible entre la position de la tour joué	*/
@@ -312,26 +316,28 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 				cptEn++; // Nombre de tour ennemis de la tour joué
 			}
 		}
-
 	}
 	afficherListeCoups(l);
 
-
-	if(l.nb == 0 && coloroBis !=P.trait && colordBis == P.trait && danger ==0) //S'il ne reste plus de coup et que le sommet=ami sur destination ennemi alors on attribue le minimum pot +3 > Coup Interresant pour nous
+/*Si il n'y a plus de coups possible et que l'on n'a joué ami sur ennemi et qu'il n'y a pas de tour voisines en danger*/
+	if(l.nb == 0 && coloroBis !=P.trait && colordBis == P.trait && danger ==0)
 	{
-		if(voisAmoBis != 0 && voisEnoBis==0)
+		if(voisAmoBis != 0 && voisEnoBis==0) // Si la tour origine possède au moins une tour vosine ami et aucune tour ennemi 
 		{
-			min = 12; //TODO: A augmenter peut etre
+			min = 12;
 		}
-		else
+		else // Sinon on diminue légèrement le potentiel
 		{
-			min = 10; //TODO: A augmenter peut etre
+			min = 10;
 		}
- 		
 	}
-	else if(l.nb==0 && colordBis !=P.trait)//Si il n'y a plus de coup possible et que la couleur de la tour dBis est la notre
+	else if(l.nb==0 && colordBis !=P.trait)//Si on joue ami sur ami et qu'il n'y a plus de coups possible
 	{
 		min=-7; // Ce coup n'est pas à joué, c'est un coup inutile, mais pas dangereux
+	}
+	else if(l.nb==0 && coloroBis == P.trait && colordBis==P.trait && voisAmoBis>=1 && voisEnoBis==1)// On joue ennemi sur ennemi pour sauver une tour ami
+	{
+		min=10;
 	}
 	else // On calcul le pire coup que l'adversaire peut nous faire après avoir joué
 	{
@@ -341,7 +347,7 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 			o = l.coups[j].origine;    // Nouvelle origine du coup adverse
 			d = l.coups[j].destination; // Nouvelle origine du coup adverse
 
-			if(P.cols[o].couleur != P.trait) //Si la colonne final est du trait ami > Coup Interresant pour nous
+			if(P.cols[o].couleur != P.trait) //Si la tour obtenue de notre couleur
 			{
 				switch(P.cols[o].nb + P.cols[d].nb)
 				{
@@ -357,11 +363,11 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 					case 5:pot = 5;
 					break;
 				}
-				min = calculMin(pot,min); //reCalcul du pire coup
+				min = calculMin(pot,min); //Recalcul du pire coup
 			}
 			else
 			{
-				switch(P.cols[o].nb + P.cols[d].nb) //Tour ennemi > Coup dangereux
+				switch(P.cols[o].nb + P.cols[d].nb) //Si la tour obtenue est de couleur ennemi
 				{
 					//tour de 3
 					case 3: pot = 3 + test(d,o,P);
@@ -375,29 +381,27 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 					case 5:pot = -10;
 					break;
 				}
-				min = calculMin(pot,min);
+				min = calculMin(pot,min); //Recalcul du pire coup
 			}
 		}
-
 		if(cptAm == 0 && cptEn >= 1) //Pas d'ami et au moins un ennemi autour
 		{
 			min = -15;
 		}
-		else if(cptEn == 0 && colordBis == P.trait && danger==0) //Pas d'ennemi autour et couleur de dBis ennemi
+		else if(cptEn == 0 && colordBis == P.trait && danger==0) //Si on joue sur une tour ennemi et qu'il n'y a plus d'ennemi autour
 		{
-			if(coloroBis != P.trait) // Si la couleur d'origine est la notre
+			if(coloroBis != P.trait) // Si la tour origine Bis est de notre couleur
 			{
-				if(voisAmoBis != 0 && voisEnoBis==1)
-				{
+				if(voisAmoBis != 0 && voisEnoBis==1)// Si la tour origine possède au moins une tour vosine ami et aucune tour ennemi après coup
+				{  
 					min = 9;
 				}
-				else
+				else // Sinon on dimunu légèrement le potentiel
 				{
 					min = 7;
 				}
-				
 			}
-			else if(cptAm>=2 && min!=-10 && danger==0)// Si au moins 2 amis et que l'ennemi ne peut pas faire de tour de 5
+			else if(cptAm>=2 && min!=-10 && danger==0)// Si au moins deux tour voisines amis et que l'ennemi ne peut pas faire de tour de 5 //TODO:modifier !=
 			{
 				min = 7;
 			}
@@ -408,7 +412,7 @@ int coupVoisins(octet dBis,octet oBis,T_Position P)
 		}
 	}
 
-	if(voisEnoBis == 0) //Si la tour oBis n'est pas en danger
+	if(voisEnoBis == 0) //Si la tour oBis possède aucun voisins ennemis
 	{
 		min=-7;
 	}
@@ -421,7 +425,9 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 	// Pour sélectionner l'index d'un coup à jouer dans la liste l 
 
 
-	int i,pot,max=-5;
+	int i;
+	int pot;		//Potentiel d'un coup
+	int max=-50;	// Potentiel maximum des coups
 	octet o, d; 
 	octet myColor = currentPosition.trait; 
 
@@ -454,10 +460,10 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 						pot = 2 + coupVoisins(d,o,currentPosition);
 				break;
 				//tour de 5
-				case 5:pot = 5;  // TODO : tester si on peut pas la faire plus tard
+				case 5:pot = 5 +coupVoisins(d,o,currentPosition); // Pas de test à faire ici
 				break;
 			}
-			max = testCoup(pot,max,i,currentPosition); // reCalcul du meilleur coup
+			max = testCoup(pot,max,i,currentPosition); // Recalcul du meilleur coup
 			
 		}
 		// Ami sur ennemi
@@ -482,7 +488,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 					break;
 
 					//tour de 6
-					case 5:pot = 15; //Pas de test à faire ici normalement
+					case 5:pot = 15; //Pas de test à faire ici
 					break;
 				}
 			}
@@ -505,11 +511,11 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 					break;
 
 					//tour de 5
-					case 5:pot = 13; // Pas de test à faire ici normalement
+					case 5:pot = 13; // Pas de test à faire ici
 					break;
 				}
 			}
-			max = testCoup(pot,max,i,currentPosition);// reCalcul du meilleur coup
+			max = testCoup(pot,max,i,currentPosition); // Recalcul du meilleur coup
 		}
 		// Ennemi sur ennemi
 		else if(currentPosition.cols[o].couleur != myColor && currentPosition.cols[d].couleur != myColor)//TODO
@@ -532,7 +538,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 				case 5:pot = 12;
 				break;
 			}
-			max = testCoup(pot,max,i,currentPosition);// reCalcul du meilleur coup
+			max = testCoup(pot,max,i,currentPosition); // Recalcul du meilleur coup
 		}
 		//Ennemi sur ami (à ne pas faire)
 		else
@@ -556,6 +562,7 @@ void choisirCoup(T_Position currentPosition, T_ListeCoups listeCoups) {
 	            break;
 	        }
 		}
+		max = testCoup(pot,max,i,currentPosition); // Recalcul du meilleur coup
 
 	}
 }
